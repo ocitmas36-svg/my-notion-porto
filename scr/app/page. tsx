@@ -1,0 +1,28 @@
+import { Client } from "@notionhq/client";
+
+const notion = new Client({ auth: process.env.NOTION_API_KEY });
+
+async function getProjects() {
+  const response = await notion.databases.query({
+    database_id: process.env.NOTION_DATABASE_ID!,
+    filter: { property: "Status", select: { equals: "Published" } },
+  });
+  return response.results;
+}
+
+export default async function Home() {
+  const projects = await getProjects();
+  return (
+    <div className="min-h-screen bg-slate-50 p-8">
+      <h1 className="text-3xl font-black mb-8">MY PORTO.</h1>
+      <div className="grid grid-cols-1 gap-6">
+        {projects.map((p: any) => (
+          <div key={p.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+            <h2 className="text-xl font-bold">{p.properties.Name.title[0]?.plain_text}</h2>
+            <p className="text-slate-400 text-sm mt-2">#{p.properties.Tags?.multi_select[0]?.name}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
